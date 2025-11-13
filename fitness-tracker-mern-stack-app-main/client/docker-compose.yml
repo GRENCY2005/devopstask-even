@@ -1,0 +1,42 @@
+cat > docker-compose.yml <<'EOF'
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: fitness-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: your_dockerhub_username/fitness-backend
+    container_name: fitness-backend
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/fitness
+      - PORT=5000
+    depends_on:
+      - mongo
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: your_dockerhub_username/fitness-frontend
+    container_name: fitness-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
